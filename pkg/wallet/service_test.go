@@ -11,13 +11,13 @@ func TestService_FindAccountByID(t *testing.T) {
 	
 		service := Service{
 			accounts: []*types.Account{
-				{ ID: 10, Phone: "9929888881", Balance: 1000,},
-				{ ID: 15, Phone: "9929999991", Balance: 1500,},		
+				{ ID: 22, Phone: "9999999999", Balance: 1000,},
+				{ ID: 32, Phone: "8888888888", Balance: 1000,},		
 			},
 		}
 	
 		expected := &types.Account{
-			ID: 10, Phone: "9929888881", Balance: 1000,	
+			ID: 22, Phone: "999999999", Balance: 1000,	
 		}
 	
 		result, _ := service.FindAccountByID(10)

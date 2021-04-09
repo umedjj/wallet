@@ -12,7 +12,7 @@ type Service struct {
 	}
 
 var ErrAccountNotFound =  errors.New("account not found")
-//s.RegisterAccount undefined (тип * Service не имеет поля или метода RegisterAccount)
+
 
 func (s *Service) FindAccountByID(accountID int64)(*types.Account, error)  {
 	var account *types.Account
@@ -25,6 +25,7 @@ func (s *Service) FindAccountByID(accountID int64)(*types.Account, error)  {
 		
 	}
 	if account == nil {
+
 		return nil, ErrAccountNotFound
 	}
 
