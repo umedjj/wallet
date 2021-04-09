@@ -20,7 +20,7 @@ func (s *Service) FindAccountByID(accountID int64)(*types.Account, error)  {
 
 		if acc.ID == accountID {
 			account = acc
-			
+			break
 		}
 		
 	}
