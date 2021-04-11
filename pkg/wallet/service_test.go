@@ -10,22 +10,25 @@ import (
 
 
 
-func TestService_FindAccountByID_success(t *testing.T)  {
-		service := Service{
-			accounts: []*types.Account{
-				{ ID: 10, Phone: "9929888881", Balance: 1000,},
-				{ ID: 15, Phone: "9929999991", Balance: 1500,},		
-			},
-		}
-	
-		expected := &types.Account{
-			ID: 10, Phone: "9929888881", Balance: 1000,	
-		}
-	
-		result, _ := service.FindAccountByID(10)
-	
-		if !reflect.DeepEqual(result, expected) {
-			t.Errorf("Invalid Result: Excpected: %v, actual: %v ", expected, result)
-		}
+func TestService_FindAccountByID_success(t *testing.T) {
+	svc:=&Service{}
+	account, err := svc.RegisterAccount("+992901900999")
+	if err!=nil{
+		t.Error(err)
+		return
+	}
+	_, err = svc.FindAccountByID(account.ID)
+	if err!=nil{
+		t.Error(err)
+		return
+	}	
 }
-
+func TestService_FindAccountByID_fail(t *testing.T) {
+	svc:=&Service{}
+	
+	_, err := svc.FindAccountByID(0)
+	if err==nil{
+			t.Errorf("Аккаунт не должен находиться")
+		return
+	}	
+}
