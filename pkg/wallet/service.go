@@ -17,18 +17,14 @@ var ErrAccountNotFound =  errors.New("account not found")
 func (s *Service) FindAccountByID(accountID int64)(*types.Account, error)  {
 	var account *types.Account
 	for _, acc := range s.accounts {
-
-		if acc.ID == accountID {
-			account = acc
-			break
+		if acc.ID ==  accountID{       // платёж найден
+			account = acc	
 		}
-		
-	}
-	if account == nil {
+	}	
 
-		return nil, ErrAccountNotFound
+	if account == nil {    // платёж не найден
+	return nil, ErrAccountNotFound
 	}
-
-	return  account, nil
+	
+	return account, nil
 }
-
