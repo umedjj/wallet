@@ -29,19 +29,3 @@ func TestService_FindAccountByID_success(t *testing.T)  {
 		}
 }
 
-func (s *Service) RegisterAccount(phone types.Phone) (*types.Account, error) {
-	for _, account := range s.accounts {
-		if account.Phone == phone {
-			return nil, ErrAccountNotFound
-		}
-	}
-	s.nextAccountID++
-	account := &types.Account{
-		ID:      s.nextAccountID,
-		Phone:   phone,
-		Balance: 0,
-	}
-	s.accounts = append(s.accounts, account)
-	return account, nil
-
-}
