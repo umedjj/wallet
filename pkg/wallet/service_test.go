@@ -9,6 +9,7 @@ import (
 
 
 
+
 type testService struct {
 	*Service
 }
@@ -146,3 +147,51 @@ func TestService_Repeat_found(t *testing.T) {
 	}
 }
 
+func TestService_FavoritePayment_ok(t *testing.T) {
+	s := newTestService()
+	_,payments,err:=s.addAccount(defaultTestAccount)
+	if err != nil {
+		t.Error(err)
+		return 
+	}
+	
+	payment:=payments[0]
+	_, err=s.FavoritePayment(payment.ID,"auto")
+	if err != nil {
+		fmt.Println(err)
+	return 
+	}
+}
+
+func TestService_PayFromFavorite_ok(t *testing.T) {
+	s := newTestService()
+	_,payments,err:=s.addAccount(defaultTestAccount)
+	if err != nil {
+		t.Error(err)
+	return 
+	}
+	
+	payment:=payments[0]
+	fv, err:=s.FavoritePayment(payment.ID,"auto")
+	if err != nil {
+		fmt.Println(err)
+	return 
+	}
+	
+	_,err=s.PayFromFavorite(fv.ID)
+	if err != nil {
+		fmt.Println()
+	return 
+	}
+	
+	savedAccount, err:=s.FindAccountByID(payment.AccountID)
+	if err != nil {
+		fmt.Println(err)
+	return
+	}
+	if savedAccount.Balance==defaultTestAccount.balance{
+		fmt.Println(savedAccount)
+	return
+	}
+	
+}

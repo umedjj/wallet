@@ -6,6 +6,7 @@ import(
 	"github.com/google/uuid"
 )
 
+
 var ErrPhoneRegistered = errors.New("phone alredy registered")
 var ErrAmmountMustBePositive = errors.New("ammount must be greater then zero")
 var ErrAccountNotFound = errors.New("account not found")
@@ -17,6 +18,7 @@ type Service struct{
 	nextAccountID int64
 	accounts 	[]*types.Account
 	payments 	[]*types.Payment
+	favorites   []*types.Favorite
 }
 
 func (s *Service) RegisterAccount(phone types.Phone) (*types.Account, error) {
@@ -36,7 +38,51 @@ func (s *Service) RegisterAccount(phone types.Phone) (*types.Account, error) {
 	return account, nil
 }
 
+func (s *Service) FavoritePayment(paymentID string, name string) (*types.Favorite, error){
+	payment, err :=s.FindPaymentByID(paymentID)
+	if err != nil {
+		return nil,err
+	}
+	favoriteID := uuid.New().String()
+	favorite := &types.Favorite{
+		ID: 		favoriteID,
+		AccountID: 	payment.AccountID,
+		Name: 		name,
+		Amount: 	payment.Amount,
+		Category: 	payment.Category,
+	}
+	s.favorites = append(s.favorites, favorite)
+	return favorite,nil
+}
 
+func (s *Service) PayFromFavorite(favoriteID string) (*types.Payment, error){
+	var favorite *types.Favorite
+	for _, fav := range s.favorites{
+		if fav.ID == favoriteID {
+			favorite=fav
+			break
+		}
+	}
+	if favorite==nil {
+		return nil, ErrFavoriteNotFound				
+	}
+	new_paymentID := uuid.New().String()
+	new_payment := &types.Payment{
+		ID: 		new_paymentID,
+		AccountID: 	favorite.AccountID,
+		Amount: 	favorite.Amount,
+		Category: 	favorite.Category,
+		Status: 	types.PaymentStatusInProgress,
+	}
+	account, account_err := s.FindAccountByID(new_payment.AccountID)
+	if account_err != nil {
+		return nil, account_err
+	}
+	account.Balance-=new_payment.Amount
+	s.payments = append(s.payments, new_payment)
+	return new_payment, nil
+	
+}
 
 func (s *Service) Deposit(accountID int64, ammount types.Money) error {
 	if ammount <= 0 {
