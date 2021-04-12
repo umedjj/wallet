@@ -5,6 +5,7 @@ import(
 	"errors"
 	"github.com/google/uuid"
 )
+
 var ErrPhoneRegistered = errors.New("phone alredy registered")
 var ErrAmmountMustBePositive = errors.New("ammount must be greater then zero")
 var ErrAccountNotFound = errors.New("account not found")
@@ -16,7 +17,6 @@ type Service struct{
 	nextAccountID int64
 	accounts 	[]*types.Account
 	payments 	[]*types.Payment
-
 }
 
 func (s *Service) RegisterAccount(phone types.Phone) (*types.Account, error) {
@@ -35,7 +35,6 @@ func (s *Service) RegisterAccount(phone types.Phone) (*types.Account, error) {
 	
 	return account, nil
 }
-
 
 
 
@@ -133,4 +132,26 @@ func (s *Service) FindPaymentByID(paymentID string) (*types.Payment, error) {
 		}
 	}
 	return nil, ErrPaymentNotFound
+}
+
+func (s *Service) Repeat(paymentID string) (*types.Payment, error)	{
+	payment, err :=s.FindPaymentByID(paymentID)
+	if err != nil {
+		return nil,err
+	}
+	new_paymentID := uuid.New().String()
+	new_payment := &types.Payment{
+		ID: 		new_paymentID,
+		AccountID: 	payment.AccountID,
+		Amount: 	payment.Amount,
+		Category: 	payment.Category,
+		Status: 	payment.Status,
+	}
+	account, account_err := s.FindAccountByID(new_payment.AccountID)
+	if account_err != nil {
+		return nil, account_err
+	}
+	account.Balance-=new_payment.Amount
+	s.payments = append(s.payments, new_payment)
+	return new_payment, nil
 }
