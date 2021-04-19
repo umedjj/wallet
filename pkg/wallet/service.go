@@ -4,6 +4,9 @@ import(
 	"github.com/umedjj/wallet/pkg/types"
 	"errors"
 	"github.com/google/uuid"
+	"strconv"
+	"log"
+	"os"
 )
 
 
@@ -200,4 +203,30 @@ func (s *Service) Repeat(paymentID string) (*types.Payment, error)	{
 	account.Balance-=new_payment.Amount
 	s.payments = append(s.payments, new_payment)
 	return new_payment, nil
+}
+
+
+
+func (s *Service) ExportToFile(path string) error  {
+	file, err :=os.Create(path)
+	if err!=nil {
+		return err
+	}
+	defer func(){
+		err := file.Close()
+		if err!=nil {
+			log.Print(err)
+		}
+	}()
+	for _, account := range s.accounts {
+		acc := strconv.FormatInt(account.ID,10)+";"+string(account.Phone)+";"+strconv.Itoa(int(account.Balance))+"|"
+		_, err = file.Write([]byte(acc))
+		if err!= nil {
+			log.Print(err)
+			return err
+		}
+	}
+
+
+	return nil
 }

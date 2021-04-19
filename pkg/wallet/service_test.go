@@ -195,3 +195,4 @@ func TestService_PayFromFavorite_ok(t *testing.T) {
 	}
 	
 }
+
