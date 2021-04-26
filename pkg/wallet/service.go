@@ -10,6 +10,7 @@ import(
 	"github.com/google/uuid"
 	"github.com/umedjj/wallet/pkg/types"
 	"io/ioutil"
+	"sync"
 )
 
 var ErrPhoneRegistered = errors.New("Phone already Registered")
@@ -411,4 +412,46 @@ func (s *Service) HistoryToFiles(payments []types.Payment, dir string, records i
 	}
 	
 	return nil
+}
+
+
+func (s *Service) SumPayments(goroutines int) types.Money {
+	wg:=sync.WaitGroup{}
+	mu:=sync.Mutex{}
+	summ:=int64(0)
+	count:=0
+	i:=0
+	if goroutines == 0{
+		count =len(s.payments)
+	} else {
+		count = int(len(s.payments)/goroutines)
+	}
+	for i=0; i<=goroutines-1; i++{
+		wg.Add(1)
+		go func(number int){
+			defer wg.Done()
+			val:=int64(0)
+			payments:= s.payments[count*number:(count)*(number+1)]
+			for _, payment:=range payments{
+				val += int64(payment.Amount)
+			}
+			mu.Lock()
+			summ+=val
+			mu.Unlock()
+		}(i)
+	}
+	wg.Add(1)
+	go func(){
+		defer wg.Done()
+		val:=int64(0)
+		payments:= s.payments[i*count:]
+		for _, payment:= range payments{
+			val+=int64(payment.Amount)
+		}
+		mu.Lock()
+		summ+=int64(val)
+		mu.Unlock()
+	}()
+	wg.Wait()
+	return types.Money(summ)
 }
