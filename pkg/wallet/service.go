@@ -9,6 +9,7 @@ import(
 	"strings"
 	"github.com/google/uuid"
 	"github.com/umedjj/wallet/pkg/types"
+	"io/ioutil"
 )
 
 var ErrPhoneRegistered = errors.New("Phone already Registered")
@@ -346,5 +347,68 @@ func (s *Service) Import(dir string) error {
 	}
 	err=s.importFavorites(pathToFavorite)
 
+	return nil
+}
+
+func (s *Service) ExportAccountHistory(accountID int64) ([]types.Payment, error) {
+	var found []types.Payment
+	if s.payments!=nil{
+		for _, account := range s.accounts {
+			if accountID==account.ID{
+				for _, payment := range s.payments {
+					if payment.AccountID==accountID{
+						found=append(found,*payment)
+					}
+				}
+				return found,nil
+			}
+		}		
+	}
+		return nil, ErrAccountNotFound
+}
+	
+
+func (s *Service) HistoryToFiles(payments []types.Payment, dir string, records int) error{
+	if payments!=nil{
+		var pay string
+		nextFile :=records
+		currentFile:=1
+		fileName:=1
+		
+		for _, payment := range payments {
+			if len(payments)<=records {
+				pathToPayment := dir+"/payments.dump"
+				var pay string
+				for _, payment := range payments {
+					pay += payment.ID+";"+strconv.Itoa(int(payment.AccountID))+";"+strconv.Itoa(int(payment.Amount)) +";" + string(payment.Category) +";" + string(payment.Status)+"\n"
+				}					
+				err :=ioutil.WriteFile(pathToPayment,[]byte(pay), 0666)
+				if err!=nil {
+					return err
+				}
+				break	
+			}
+			if nextFile>=currentFile {					
+				if currentFile==nextFile||payments[len(payments)-1]==payment{
+					nextFile+=records
+					currentFile++					
+					pay +=payment.ID+";"+strconv.Itoa(int(payment.AccountID))+";"+strconv.Itoa(int(payment.Amount)) +";" + string(payment.Category) +";" + string(payment.Status)+"\n"
+				} else {				
+					currentFile++					
+					pay +=payment.ID+";"+strconv.Itoa(int(payment.AccountID))+";"+strconv.Itoa(int(payment.Amount)) +";" + string(payment.Category) +";" + string(payment.Status)+"\n"
+					continue
+				}
+			}
+			pathToPayment := dir+"/payments"+strconv.Itoa(fileName)+".dump"	
+			fileName++		
+			err :=ioutil.WriteFile(pathToPayment,[]byte(pay), 0666)
+			if err!=nil {
+				return err
+			}
+			pay=""
+		}
+		return nil
+	}
+	
 	return nil
 }
